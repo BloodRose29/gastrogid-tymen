@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Гастрономический гид Тюмени | Сибирь на вкус</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=eb7ab90f-8920-4e39-bbf2-a59fd9c64540&lang=ru_RU" type="text/javascript"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="text-gray-100 h-screen bg-[#0b0c10] flex flex-col overflow-hidden">
+
+    <header class="bg-[#111216] border-b border-zinc-800 px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0 z-10">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#d47b52] to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/10">
+                <i class="fa-solid fa-utensils text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-black tracking-tight text-white uppercase">Сибирь на вкус</h1>
+                <p class="text-xs text-zinc-500 font-medium">Интерактивный гастрономический гид по Тюмени</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 bg-[#191a20] border border-zinc-800 px-3 py-1.5 rounded-xl">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="restaurants-count" class="text-xs font-bold text-zinc-400">Заведений в базе: 0</span>
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative min-h-0">
+        
+        <div class="flex-1 h-full relative bg-[#0b0c10] order-1">
+            <div id="map" class="w-full h-full absolute inset-0"></div>
+
+            <div id="details-slide" class="hidden absolute top-4 left-4 bottom-4 w-[calc(100%-2rem)] sm:w-[400px] bg-[#111216]/95 backdrop-blur-md border border-zinc-800 rounded-2xl shadow-2xl z-30 flex flex-col overflow-hidden details-slide">
+                <div class="relative h-48 shrink-0 bg-zinc-900">
+                    <img id="details-img" src="" alt="" class="w-full h-full object-cover opacity-80">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#111216] via-transparent to-transparent"></div>
+                    <button onclick="closeDetails()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors border border-white/10">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <span id="details-badge" class="absolute bottom-4 left-4 bg-[#d47b52] text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md"></span>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-5 space-y-4 min-h-0">
+                    <div class="slide-title-area">
+                        <h2 id="details-name"></h2>
+                        <div class="sub-title" id="details-cuisine"></div>
+                    </div>
+
+                    <p id="details-desc" class="text-zinc-400 text-sm leading-relaxed"></p>
+
+                    <div class="info-meta-block space-y-2.5">
+                        <div class="meta-line">
+                            <i class="fa-solid fa-location-dot shrink-0"></i>
+                            <span id="details-address"></span>
+                        </div>
+                        <div class="meta-line">
+                            <i class="fa-solid fa-wallet shrink-0"></i>
+                            <span id="details-price"></span>
+                        </div>
+                        <div class="meta-line">
+                            <i class="fa-solid fa-utensils shrink-0"></i>
+                            <div>
+                                <strong class="text-zinc-300 block text-xs mb-0.5">Фирменные блюда:</strong>
+                                <span id="details-dishes"></span>
+                            </div>
+                        </div>
+                        <div class="meta-line">
+                            <i class="fa-solid fa-compass shrink-0"></i>
+                            <div>
+                                <strong class="text-zinc-300 block text-xs mb-0.5">Атмосфера и стиль:</strong>
+                                <span id="details-style"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="history-section hidden" id="details-history-block">
+                        <h3>Историческая справка</h3>
+                        <p id="details-history" class="text-xs text-zinc-500 leading-relaxed bg-[#15161c] p-3 rounded-xl border border-zinc-800/40"></p>
+                    </div>
+
+                    <a id="details-link" href="#" target="_blank" class="visit-link-btn flex items-center justify-center gap-2 w-full bg-gradient-to-r from-[#d47b52] to-amber-600 hover:from-amber-600 hover:to-[#d47b52] text-white font-bold py-3 px-4 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-orange-500/5">
+                        <span>Перейти на сайт VisitTyumen</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                    </a>
+                </div>
+            </div>
+
+            <button onclick="toggleQuizModal(true)" class="absolute bottom-6 left-6 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-500 text-white font-bold px-5 py-3.5 rounded-xl shadow-xl shadow-orange-600/20 z-20 flex items-center gap-2.5 transition-all transform hover:scale-[1.02] text-xs uppercase tracking-wider">
+                <i class="fa-solid fa-ice-cream text-sm"></i>
+                <span>Гастрономический тест</span>
+            </button>
+        </div>
+
+        <div id="sidebar-scroll" class="w-full lg:w-[420px] bg-[#111216] border-l border-zinc-800 flex flex-col shrink-0 z-20 h-full order-2">
+            <div class="p-5 border-b border-zinc-800/60 space-y-4 shrink-0">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-zinc-500 text-sm"></i>
+                    <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Поиск заведения, кухни или блюда..." class="w-full bg-[#191a20] border border-zinc-800 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#d47b52] transition-colors">
+                </div>
+
+                <div class="flex flex-wrap gap-1.5" id="category-filters">
+                    <button onclick="filterCategory('all')" class="category-btn active px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all">Все</button>
+                    <button onclick="filterCategory('сибирская')" class="category-btn px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all">Сибирская</button>
+                    <button onclick="filterCategory('европейская')" class="category-btn px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all">Европейская</button>
+                    <button onclick="filterCategory('грузинская')" class="category-btn px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all">Грузинская</button>
+                    <button onclick="filterCategory('азиатская')" class="category-btn px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all">Азиатская</button>
+                    <button onclick="filterCategory('кофейня')" class="category-btn px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all">Кофейни</button>
+                </div>
+            </div>
+
+            <div id="restaurants-list" class="flex-1 p-5 space-y-3 overflow-y-auto min-h-0"></div>
+        </div>
+
+        <div id="quiz-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-[#111216] border border-zinc-800 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+                
+                <div class="px-5 py-4 border-b border-zinc-800 flex items-center justify-between shrink-0 bg-[#15161c]">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-[#d47b52]"></i>
+                        <h3 class="font-bold text-sm uppercase tracking-wider text-white">Подбор заведения</h3>
+                    </div>
+                    <button onclick="toggleQuizModal(false)" class="text-zinc-500 hover:text-white transition-colors">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-5 min-h-0">
+                    <div id="quiz-question-container">
+                        <div class="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden mb-5">
+                            <div id="quiz-progress" class="bg-[#d47b52] h-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <h4 id="quiz-question-text" class="text-base font-bold text-white mb-4 leading-snug"></h4>
+                        <div id="quiz-answers" class="space-y-2"></div>
+                    </div>
+
+                    <div id="quiz-result-container" class="hidden text-center space-y-5 py-4">
+                        <div class="space-y-4">
+                            <div class="w-16 h-16 rounded-2xl bg-[#d47b52]/10 border border-[#d47b52]/30 flex items-center justify-center mx-auto">
+                                <i class="fa-solid fa-map-marked-alt text-3xl text-[#d47b52]"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-black text-[#d47b52] uppercase tracking-widest">Ваш гастрономический профиль</h3>
+                                <h2 id="quiz-result-title" class="text-2xl font-black text-white mt-1">Сибирский Первопроходец</h2>
+                                <p id="quiz-result-desc" class="text-zinc-400 text-sm leading-relaxed mt-2"></p>
+                            </div>
+
+                            <hr class="border-zinc-800">
+
+                            <div>
+                                <h4 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">Рекомендуемые заведения:</h4>
+                                <div id="quiz-recommendations" class="space-y-2.5"></div>
+                            </div>
+
+                            <button onclick="resetQuiz()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold py-3 px-4 rounded-xl text-xs transition-all">
+                                <i class="fa-solid fa-rotate-left mr-2"></i> Пройти тест заново
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>
